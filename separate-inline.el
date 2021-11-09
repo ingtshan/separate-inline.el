@@ -10,7 +10,7 @@
   "List of rules with the form 
 (TARGET-REGEXP APART-REGEXP . DELIMITER)."
   :type '(alist :key-type string :value-type string)
-  :group 'format-inline)
+  :group 'separate-inline)
 
 (defvar separate-inline-mode-hook nil
   "Functions to be called for `separate-inline-mode'.")
