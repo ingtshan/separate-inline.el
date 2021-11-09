@@ -1,2 +1,3 @@
 # separate-inline.el
-separate word automatically with given regexp
+自动插入分隔符
+Separating word automatically with given regexp
