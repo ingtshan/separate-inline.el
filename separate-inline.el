@@ -99,7 +99,7 @@ org-mode 中文行内分隔规格"
   (if (not separate-inline-mode)
       (remove-hook 'after-change-functions 'separate-inline-last-line t)
     (progn
-      (run-hooks 'separate-inline-mode-hooks)
+      (run-hooks 'separate-inline-mode-hook)
       (add-hook 'after-change-functions 'separate-inline-last-line nil t))))
 
 (provide 'separate-inline)
