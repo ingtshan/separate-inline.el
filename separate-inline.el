@@ -29,34 +29,29 @@ If no nil, separate-inline only after newline (press enter key).")
   ;; \n ASCII eq 10
   (and (eq len 0) (not (eq beg end)) (eq (char-after beg) 10)))
 
-(defun separate-inline-detect-cursor-leaveline-behavior ()
+(defun separate-inline-update-cursor-pos ()
   ;; update var only for local buffer
   (unless separate-inline-last-pos
-    (make-local-variable 'separate-inline-last-pos)
-    (setq separate-inline-last-pos (point))
-    )
-  (let ((last nil))
-    (unless (eq (line-number-at-pos)
-                (line-number-at-pos separate-inline-last-pos))
-      (setq last separate-inline-last-pos)
-      (setq separate-inline-last-pos (point)))    
-    last))
+    (make-local-variable 'separate-inline-last-pos))
+  (setq separate-inline-last-pos (point)))
 
 (defun separate-inline-detect-change (beg end len)
-  "Run at after-change-functions to update `separate-inline-needed'"
+  "Run at after-change-functions to update `separate-inline-need'"
+  (message "need beg %s end %s len %s" beg end len)
   (unless (eq -1 separate-inline-need)
     (make-local-variable 'separate-inline-need)
     (setq separate-inline-need t))
-  (unless separate-inline-need
-    (setq separate-inline-need t)))
+  (or separate-inline-need
+      (setq separate-inline-need t)))
 
 (defun separate-inline-meet-need ()
   "Run after `separate-inline-update'"
+  (message "message meet")
   (unless (eq -1 separate-inline-need)
     (make-local-variable 'separate-inline-need)
     (setq separate-inline-need nil))
-  (when separate-inline-need
-    (setq separate-inline-need nil)))
+  (and separate-inline-need
+       (setq separate-inline-need nil)))
 
 (defun separate-inline-update (POS)
   "Separating targe line's inline format.
@@ -119,15 +114,18 @@ By given rules of `separate-inline-regexp-rules'"
 
 (defun separate-inline-last-line-by-newline (beg end len)
   "Trigger inline update by newline behavior"
-  (when (separate-inline-detect-newline-behavior beg end len)
-    (separate-inline-update beg)))
+  (and (separate-inline-detect-newline-behavior beg end len)
+       (separate-inline-update beg)))
 
 (defun separate-inline-last-line-by-leaveline ()
   "Trigger inline update if cursor leave current line"
-  (when separate-inline-need
-    (let ((pos (separate-inline-detect-cursor-leaveline-behavior)))
-      (when pos
-        (separate-inline-update pos)))))
+  (let ((last separate-inline-last-pos))
+    (separate-inline-update-cursor-pos)    
+    (and separate-inline-need
+         ;; cursor leaveline? 
+         (not (eq (line-number-at-pos) (line-number-at-pos last)))
+         ;; then do inline update
+         (separate-inline-update last))))
 
 (defun separate-inline-use-default-rules-for-org-local ()
   "A tested rules for Chinese user to separate inline in org-mode.
