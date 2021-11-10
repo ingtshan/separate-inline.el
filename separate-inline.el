@@ -54,8 +54,7 @@ If no nil, separate-inline only after newline (press enter key).")
 (defun separate-inline-update (POS)
   "Separating targe line's inline format.
 By given rules of `separate-inline-regexp-rules'"
-  (save-excursion    
-    
+  (save-excursion        
     (goto-char POS)      
     
     (save-restriction
@@ -120,8 +119,9 @@ By given rules of `separate-inline-regexp-rules'"
   (let ((last separate-inline-last-pos))
     (separate-inline-update-cursor-pos)    
     (and separate-inline-need
-         ;; cursor leaveline? 
-         (not (eq (line-number-at-pos) (line-number-at-pos last)))
+         ;; last not in the same line
+         (or (< last (line-beginning-position))
+             (> last (line-end-position)))
          ;; then do inline update
          (separate-inline-update last))))
 
