@@ -37,6 +37,9 @@ If no nil, separate-inline only after newline (press enter key).")
 
 (defun separate-inline-detect-change (beg end len)
   "Run at after-change-functions to update `separate-inline-need'"
+  
+  (separate-inline-update-cursor-pos) ;recode current change pos
+  
   (unless (eq -1 separate-inline-need)
     (make-local-variable 'separate-inline-need)
     (setq separate-inline-need t))
@@ -116,14 +119,12 @@ By given rules of `separate-inline-regexp-rules'"
 
 (defun separate-inline-last-line-by-leaveline ()
   "Trigger inline update if cursor leave current line"
-  (let ((last separate-inline-last-pos))
-    (separate-inline-update-cursor-pos)    
-    (and separate-inline-need
-         ;; last not in the same line
-         (or (< last (line-beginning-position))
-             (> last (line-end-position)))
-         ;; then do inline update
-         (separate-inline-update last))))
+  (and separate-inline-need
+       ;; last not in the same line
+       (or (< separate-inline-last-pos (line-beginning-position))
+           (> separate-inline-last-pos (line-end-position)))
+       ;; then do inline update
+       (separate-inline-update separate-inline-last-pos)))
 
 (defun separate-inline-use-default-rules-for-org-local ()
   "A tested rules for Chinese user to separate inline in org-mode.
