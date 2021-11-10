@@ -2,7 +2,11 @@
 
 自动插入分隔符
 
-Separating word automatically with given regexp after newline behavior.
+Separating word automatically with given regexp after cusor leave current line.
+
+![screencapture](screencapture1.gif)
+
+Or after newline behavior only.
 
 ![screencapture](screencapture.gif)
 
@@ -57,4 +61,12 @@ org-mode 中文行内分隔规格"
           ("[\*\+\/\~\=\$\_]*[0-9A-Za-z]+[\-0-9A-Za-z\*\+\/\~\=\$\_]*"
            "\\cc" . " "))))
 ```
+## Trigger
+
+Default when cusor leave current line.
+
+If you want to limit only by newline, set like this
+```elisp
+(setq separate-inline-only-by-newline t)
+``
 
