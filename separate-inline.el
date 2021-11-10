@@ -37,7 +37,6 @@ If no nil, separate-inline only after newline (press enter key).")
 
 (defun separate-inline-detect-change (beg end len)
   "Run at after-change-functions to update `separate-inline-need'"
-  (message "need beg %s end %s len %s" beg end len)
   (unless (eq -1 separate-inline-need)
     (make-local-variable 'separate-inline-need)
     (setq separate-inline-need t))
@@ -46,7 +45,6 @@ If no nil, separate-inline only after newline (press enter key).")
 
 (defun separate-inline-meet-need ()
   "Run after `separate-inline-update'"
-  (message "message meet")
   (unless (eq -1 separate-inline-need)
     (make-local-variable 'separate-inline-need)
     (setq separate-inline-need nil))
