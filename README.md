@@ -61,10 +61,9 @@ org-mode 中文行内分隔规格"
 
 Default when cusor leave current line.
 
-If you want to limit only by newline, set like this
+If you want to limit only by newline, set
 ```elisp
 (setq separate-inline-only-by-newline t)
-``
-
+```
 ![screencapture](screencapture.gif)
 
