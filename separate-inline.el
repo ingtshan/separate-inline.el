@@ -46,7 +46,9 @@ If no nil, separate-inline only after newline (press enter key).")
     (make-local-variable 'separate-inline-need)
     (setq separate-inline-need t))
   (or separate-inline-need
-      (setq separate-inline-need t)))
+      (setq separate-inline-need t))
+
+  (separate-inline-last-line-by-newline beg end len))
 
 (defun separate-inline-meet-need ()
   "Run after `separate-inline-update'"
@@ -114,9 +116,9 @@ By given rules of `separate-inline-regexp-rules'"
 
 (defun separate-inline-last-line-by-newline (beg end len)
   "Trigger inline update by newline behavior"
-  (save-excursion
-    (goto-char beg)
-    (and (separate-inline-detect-newline-behavior beg end len)
+  (and (separate-inline-detect-newline-behavior beg end len)
+       (save-excursion
+         (goto-char beg)
          (separate-inline-update (line-beginning-position)))))
 
 (defun separate-inline-last-line-by-leaveline ()
