@@ -18,49 +18,49 @@ If no nil, separate-inline only after newline (press enter key).")
 (defvar separate-inline-mode-hook nil
   "Functions to be called for `separate-inline-mode'.")
 
-(defvar separate-inline-last-beg nil
-  "Holds the last line-beginning-position")
-
-(defvar separate-inline-need -1
-  "To control separate-inline")
+(defvar separate-inline--last-beg nil
+  "To control separate-inline, 
+When inline need ,it holds the last line-beginning-position. 
+if nil, it tells to init in this buffer.
+if -1, it tells last need is meet
+if -2, it tells separate-inline-update is running")
 
 (defun separate-inline-detect-newline-behavior (beg end len)
   "t if current change is newline"
   ;; \n ASCII eq 10
   (and (eq len 0) (not (eq beg end)) (eq (char-after beg) 10)))
 
-(defun separate-inline-update-cursor-beg (beg)
+(defun separate-inline-change-state (beg)
   ;; update var only for local buffer
-  (unless separate-inline-last-beg
-    (make-local-variable 'separate-inline-last-beg))
-  (or (eq beg separate-inline-last-beg)
-      (setq separate-inline-last-beg beg)))
+  (unless separate-inline--last-beg
+    (make-local-variable 'separate-inline--last-beg))
+  (or (eq beg separate-inline--last-beg)
+      (setq separate-inline--last-beg beg)))
 
 (defun separate-inline-detect-change (beg end len)
-  "Run at after-change-functions to update `separate-inline-need'"
-  
-  (separate-inline-update-cursor-beg
-   (line-beginning-position)) ;recode current change pos
-  
-  (when (eq -1 separate-inline-need)
-    (make-local-variable 'separate-inline-need)
-    (setq separate-inline-need t))
-  (or separate-inline-need
-      (setq separate-inline-need t))
+  "Run at after-change-functions"
 
-  (separate-inline-last-line-by-newline beg end len))
+  (unless (eq -2 separate-inline--last-beg) ;refuse -2
+    (if (separate-inline-detect-newline-behavior beg end len)
+        (save-excursion
+          (goto-char beg)
+          (separate-inline-change-state (line-beginning-position)))
+      (separate-inline-change-state (line-beginning-position)))))
 
-(defun separate-inline-meet-need ()
-  "Run after `separate-inline-update'"
-  (when (eq -1 separate-inline-need)
-    (make-local-variable 'separate-inline-need)
-    (setq separate-inline-need nil))
-  (and separate-inline-need
-       (setq separate-inline-need nil)))
+(defun separate-inline-detect-only-newline (beg end len)
+  "Run at after-change-functions"
+
+  (unless (eq -2 separate-inline--last-beg) ;refuse -2
+    (when (separate-inline-detect-newline-behavior beg end len)
+      (save-excursion
+        (goto-char beg)
+        (separate-inline-change-state (line-beginning-position))))))
 
 (defun separate-inline-update (beg)
   "Separating targe line's inline format.
 By given rules of `separate-inline-regexp-rules'"
+  ;; tell others next change is me
+  (separate-inline-change-state -2)
   (save-excursion        
     (goto-char beg)      
     
@@ -116,22 +116,16 @@ By given rules of `separate-inline-regexp-rules'"
            ))
        
        separate-inline-regexp-rules)))
-  (separate-inline-meet-need))
+  ;; tell others the need is meet
+  (separate-inline-change-state -1))
 
-(defun separate-inline-last-line-by-newline (beg end len)
-  "Trigger inline update by newline behavior"
-  (and (separate-inline-detect-newline-behavior beg end len)
-       (save-excursion
-         (goto-char beg)
-         (separate-inline-update (line-beginning-position)))))
-
-(defun separate-inline-last-line-by-leaveline ()
+(defun separate-inline-update-last-line ()
   "Trigger inline update if cursor leave current line"
-  (and separate-inline-need separate-inline-last-beg
+  (and separate-inline--last-beg
        ;; last not in the same line
-       (not (eq separate-inline-last-beg (line-beginning-position)))
+       (not (eq separate-inline--last-beg (line-beginning-position)))
        ;; then do inline update
-       (separate-inline-update separate-inline-last-beg)))
+       (separate-inline-update separate-inline--last-beg)))
 
 (defun separate-inline-use-default-rules-for-org-local ()
   "A tested rules for Chinese user to separate inline in org-mode.
@@ -151,21 +145,20 @@ org-mode 中文行内分隔规格"
   (if (not separate-inline-mode)
       (progn
         (remove-hook 'after-change-functions
-                     'separate-inline-last-line-by-newline t)
+                     'separate-inline-detect-only-newline t)
         (remove-hook 'after-change-functions
                      'separate-inline-detect-change t)
         (remove-hook 'post-command-hook
-                     'separate-inline-last-line-by-leaveline t))
+                     'separate-inline-update-last-line t))
     (progn
       (run-hooks 'separate-inline-mode-hook)
       (if separate-inline-only-by-newline
           (add-hook 'after-change-functions
-                    'separate-inline-last-line-by-newline nil t)
-        (progn
-          (add-hook 'after-change-functions
-                    'separate-inline-detect-change nil t)
-          (add-hook 'post-command-hook
-                    'separate-inline-last-line-by-leaveline nil t))))))
+                    'separate-inline-detect-only-newline nil t)        
+        (add-hook 'after-change-functions
+                  'separate-inline-detect-change nil t))
+      (add-hook 'post-command-hook
+                'separate-inline-update-last-line nil t))))
 
 (provide 'separate-inline)
 ;;; separate-inline.el ends here
