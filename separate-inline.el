@@ -64,8 +64,9 @@ By given rules of `separate-inline-regexp-rules'"
   (save-excursion        
     (goto-char beg)      
     
-    (save-restriction
-      (narrow-to-region beg (line-end-position))
+    ;; (save-restriction
+    ;;   (narrow-to-region (point-min) (line-end-position))
+    (let ((bound (line-end-position)))
       
       (mapc
        (lambda (r)
@@ -87,28 +88,31 @@ By given rules of `separate-inline-regexp-rules'"
                  (cadr r) "\\)\\("
                  (car r) "$\\)")))
 
-           (goto-char (point-min))
+           ;; (goto-char beg)
            
-           (while (search-forward-regexp rx-h nil t)
+           (while (search-forward-regexp rx-h bound t)
 
              (goto-char (match-end 1))
-             (insert (cddr r)))
+             (insert (cddr r))
+             (setq bound (1+ bound)))
 
-           (goto-char (point-min))
+           (goto-char beg)
            
-           (while (search-forward-regexp rx-t nil t)
+           (while (search-forward-regexp rx-t bound t)
 
              (goto-char (match-end 1))
-             (insert (cddr r)))
-
-           (goto-char (point-min))
+             (insert (cddr r))
+             (setq bound (1+ bound)))
            
-           (while (search-forward-regexp rx-1 nil t)
+           (goto-char beg)
+           
+           (while (search-forward-regexp rx-1 bound t)
 
              (goto-char (match-end 2))
              (insert (cddr r))
              (goto-char (match-beginning 2))
-             (insert (cddr r)))
+             (insert (cddr r))
+             (setq bound (+ 2 bound)))
            ))
        
        separate-inline-regexp-rules)))
