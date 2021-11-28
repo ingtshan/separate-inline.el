@@ -79,16 +79,26 @@ By given rules of `separate-inline-regexp-rules'"
                  (cadr r) "\\)"))
                (rx-h
                 (concat
-                 "\\(^"
+                 "\\("
                  (car r) "\\)\\("
                  (cadr r) "\\)"))
                (rx-t
                 (concat
                  "\\("
                  (cadr r) "\\)\\("
-                 (car r) "$\\)")))
+                 (car r) "\\)")))
 
            ;; (goto-char beg)
+
+           (while (search-forward-regexp rx-1 bound t)
+
+             (goto-char (match-end 2))
+             (insert (cddr r))
+             (goto-char (match-beginning 2))
+             (insert (cddr r))
+             (setq bound (+ 2 bound)))
+
+           (goto-char beg)
            
            (while (search-forward-regexp rx-h bound t)
 
@@ -104,15 +114,6 @@ By given rules of `separate-inline-regexp-rules'"
              (insert (cddr r))
              (setq bound (1+ bound)))
            
-           (goto-char beg)
-           
-           (while (search-forward-regexp rx-1 bound t)
-
-             (goto-char (match-end 2))
-             (insert (cddr r))
-             (goto-char (match-beginning 2))
-             (insert (cddr r))
-             (setq bound (+ 2 bound)))
            ))
        
        separate-inline-regexp-rules)))
