@@ -34,27 +34,25 @@ if -2, it tells separate-inline-update is running")
   ;; update var only for local buffer
   (unless separate-inline--last-beg
     (make-local-variable 'separate-inline--last-beg))
-  (or (eq beg separate-inline--last-beg)
-      (setq separate-inline--last-beg beg)))
+  
+  (setq separate-inline--last-beg beg))
 
 (defun separate-inline-detect-change (beg end len)
   "Run at after-change-functions"
 
-  (unless (eq -2 separate-inline--last-beg) ;refuse -2
-    (if (separate-inline-detect-newline-behavior beg end len)
-        (save-excursion
-          (goto-char beg)
-          (separate-inline-change-state (line-beginning-position)))
-      (separate-inline-change-state (line-beginning-position)))))
+  (and (or (eq -1 separate-inline--last-beg)
+           (eq nil separate-inline--last-beg))
+       (separate-inline-change-state (line-beginning-position))))
 
 (defun separate-inline-detect-only-newline (beg end len)
   "Run at after-change-functions"
 
-  (unless (eq -2 separate-inline--last-beg) ;refuse -2
-    (when (separate-inline-detect-newline-behavior beg end len)
-      (save-excursion
-        (goto-char beg)
-        (separate-inline-change-state (line-beginning-position))))))
+  (and (or (eq -1 separate-inline--last-beg)
+           (eq nil separate-inline--last-beg))
+       (separate-inline-detect-newline-behavior beg end len)
+       (save-excursion
+         (goto-char beg)
+         (separate-inline-change-state (line-beginning-position)))))
 
 (defun separate-inline-update (beg)
   "Separating targe line's inline format.
