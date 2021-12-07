@@ -131,9 +131,14 @@ By given rules of `separate-inline-regexp-rules'"
 org-mode 中文行内分隔规格"
   (make-local-variable 'separate-inline-regexp-rules)
   (setq separate-inline-regexp-rules
-        '(("[\*\+\/\~\=\$\_]\\cc+[\*\+\/\~\=\$\_]"
+        '(;; chinese character
+          ("[\*\+\/\~\=\$\_]\\cc+[\*\+\/\~\=\$\_]"
            "\\cc" . "\x200B")
+          ;; english word
           ("[\*\+\/\~\=\$\_]*[0-9A-Za-z]+[0-9A-Za-z\*\+\/\~\=\$\_]*"
+           "\\cc" . " ")
+          ;; latex
+          ("[$]+[!-~]+[$]+"
            "\\cc" . " "))))
 
 ;;;###autoload
